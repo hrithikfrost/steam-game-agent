@@ -78,3 +78,4 @@ app/
 - LLM calls are cached in PostgreSQL through `llm_cache`.
 - Recommendation scoring is deterministic and does not depend on OpenAI.
 - Steam pages are not scraped; only Steam Web API and Steam store links are used.
+
