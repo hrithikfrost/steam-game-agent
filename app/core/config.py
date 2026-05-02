@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     app_name: str = "Steam Game AI Agent"
     environment: str = "local"
     database_url: str
+    database_ssl: bool = False
+    supabase_project_ref: str | None = None
     telegram_bot_token: str = Field(default="")
     openai_api_key: str = Field(default="")
     openai_model: str = "gpt-4.1-mini"
@@ -23,4 +25,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-
