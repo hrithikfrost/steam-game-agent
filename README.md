@@ -12,8 +12,8 @@ MVP Telegram bot that recommends Steam games from onboarding answers, optional S
 - OpenAI usage limited to tag extraction and review-style pros/cons summaries
 - Feedback buttons: interested, not interested, play now
 - Daily recommendations via APScheduler
-- FastAPI backend with health and manual scheduler endpoints
-- PostgreSQL via SQLAlchemy async
+- FastAPI backend with health endpoint
+- PostgreSQL or Supabase Postgres via SQLAlchemy async
 
 ## Stack
 
@@ -22,6 +22,7 @@ MVP Telegram bot that recommends Steam games from onboarding answers, optional S
 - aiogram
 - SQLAlchemy async + asyncpg
 - PostgreSQL
+- Supabase-ready database configuration
 - OpenAI API
 - APScheduler
 - httpx
@@ -58,6 +59,32 @@ python -m app.main
 
 The FastAPI app runs on `http://localhost:8000`. The Telegram bot runs in polling mode in the same process.
 
+## Supabase
+
+This project is configured for Supabase project `pstfydmolvyhfffrozoy`.
+
+1. Copy the Supabase environment example:
+
+```bash
+cp .env.supabase.example .env
+```
+
+2. In Supabase, open `Project Settings -> Database -> Connection string -> URI`.
+
+3. Put the pooled connection string into `DATABASE_URL` and keep:
+
+```env
+DATABASE_SSL=true
+```
+
+Use the async SQLAlchemy prefix:
+
+```env
+DATABASE_URL=postgresql+asyncpg://postgres.pstfydmolvyhfffrozoy:<YOUR_DATABASE_PASSWORD>@<SUPABASE_POOLER_HOST>:6543/postgres
+```
+
+On startup the MVP creates the required tables in Supabase via SQLAlchemy metadata. For production, replace this with Alembic migrations.
+
 ## Project Layout
 
 ```text
@@ -78,4 +105,3 @@ app/
 - LLM calls are cached in PostgreSQL through `llm_cache`.
 - Recommendation scoring is deterministic and does not depend on OpenAI.
 - Steam pages are not scraped; only Steam Web API and Steam store links are used.
-
