@@ -11,7 +11,8 @@ class Base(DeclarativeBase):
 
 
 settings = get_settings()
-engine = create_async_engine(settings.database_url, pool_pre_ping=True)
+connect_args = {"ssl": True} if settings.database_ssl else {}
+engine = create_async_engine(settings.database_url, pool_pre_ping=True, connect_args=connect_args)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
@@ -25,4 +26,3 @@ async def create_schema() -> None:
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
