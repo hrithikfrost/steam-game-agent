@@ -12,7 +12,11 @@ class Base(DeclarativeBase):
 
 settings = get_settings()
 connect_args = {"ssl": True} if settings.database_ssl else {}
-engine = create_async_engine(settings.database_url, pool_pre_ping=True, connect_args=connect_args)
+database_url = settings.database_url
+if database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+engine = create_async_engine(database_url, pool_pre_ping=True, connect_args=connect_args)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
