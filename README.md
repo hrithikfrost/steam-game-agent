@@ -71,7 +71,7 @@ uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 Set these Railway variables before deploying:
 
-- `DATABASE_URL`
+- `DATABASE_URL` with either `postgresql://` or `postgresql+asyncpg://`
 - `DATABASE_SSL=true`
 - `TELEGRAM_BOT_TOKEN`
 - `OPENAI_API_KEY`
@@ -96,7 +96,7 @@ cp .env.supabase.example .env
 DATABASE_SSL=true
 ```
 
-Use the async SQLAlchemy prefix:
+The app automatically converts Supabase's `postgresql://` URL to SQLAlchemy's async `postgresql+asyncpg://` format. You can use either form:
 
 ```env
 DATABASE_URL=postgresql+asyncpg://postgres.pstfydmolvyhfffrozoy:<YOUR_DATABASE_PASSWORD>@<SUPABASE_POOLER_HOST>:6543/postgres
