@@ -61,6 +61,8 @@ The FastAPI app runs on `http://localhost:8000`. The Telegram bot runs in pollin
 
 ## Railway
 
+The repository pins Python in `.python-version` so Railway/Railpack installs Python 3.11 instead of the Railpack default.
+
 Railway uses `railpack.json` to start the service with:
 
 ```bash
