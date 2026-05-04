@@ -59,6 +59,23 @@ python -m app.main
 
 The FastAPI app runs on `http://localhost:8000`. The Telegram bot runs in polling mode in the same process.
 
+## Railway
+
+Railway uses `railpack.json` to start the service with:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+Set these Railway variables before deploying:
+
+- `DATABASE_URL`
+- `DATABASE_SSL=true`
+- `TELEGRAM_BOT_TOKEN`
+- `OPENAI_API_KEY`
+- `STEAM_API_KEY`
+- `RAWG_API_KEY`
+
 ## Supabase
 
 This project is configured for Supabase project `pstfydmolvyhfffrozoy`.
