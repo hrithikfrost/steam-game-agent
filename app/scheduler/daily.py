@@ -27,7 +27,13 @@ async def send_daily_recommendations(settings: Settings, bot: Bot) -> None:
 
     engine = RecommendationEngine(
         rawg=RAWGService(settings.rawg_api_key),
-        llm=LLMService(settings.openai_api_key, settings.openai_model),
+        llm=LLMService(
+            settings.openai_api_key,
+            settings.openai_model,
+            settings.openai_base_url,
+            settings.openai_app_url,
+            settings.openai_app_name or settings.app_name,
+        ),
     )
     async with SessionLocal() as session:
         users = await list_active_users(session)
@@ -35,4 +41,3 @@ async def send_daily_recommendations(settings: Settings, bot: Bot) -> None:
             recommendations = await engine.recommend(session, user)
             for item in recommendations:
                 await _send_recommendation(bot, user.telegram_id, item)
-
