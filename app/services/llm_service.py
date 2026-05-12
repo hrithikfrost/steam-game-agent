@@ -9,8 +9,25 @@ from app.models.llm_cache import LLMCache
 
 
 class LLMService:
-    def __init__(self, api_key: str, model: str) -> None:
-        self.client = AsyncOpenAI(api_key=api_key)
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        base_url: str = "https://api.openai.com/v1",
+        app_url: str | None = None,
+        app_name: str | None = None,
+    ) -> None:
+        default_headers = {}
+        if app_url:
+            default_headers["HTTP-Referer"] = app_url
+        if app_name:
+            default_headers["X-Title"] = app_name
+
+        self.client = AsyncOpenAI(
+            api_key=api_key,
+            base_url=base_url,
+            default_headers=default_headers or None,
+        )
         self.model = model
 
     async def extract_tags(self, session: AsyncSession, text: str) -> dict:
@@ -65,4 +82,3 @@ class LLMService:
     def _cache_key(self, operation: str, value: str) -> str:
         digest = hashlib.sha256(value.encode("utf-8")).hexdigest()
         return f"{operation}:{digest}"
-
