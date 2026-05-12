@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -17,6 +19,9 @@ from app.services.recommendation_engine import RecommendationEngine
 from app.services.steam_service import SteamService
 
 
+logger = logging.getLogger(__name__)
+
+
 class Onboarding(StatesGroup):
     favorite_games = State()
     last_loved_game = State()
@@ -30,7 +35,13 @@ def build_dispatcher(settings: Settings) -> Dispatcher:
     router = Router()
 
     rawg = RAWGService(settings.rawg_api_key)
-    llm = LLMService(settings.openai_api_key, settings.openai_model)
+    llm = LLMService(
+        settings.openai_api_key,
+        settings.openai_model,
+        settings.openai_base_url,
+        settings.openai_app_url,
+        settings.openai_app_name or settings.app_name,
+    )
     steam = SteamService(settings.steam_api_key)
     engine = RecommendationEngine(rawg=rawg, llm=llm)
 
@@ -66,7 +77,15 @@ def build_dispatcher(settings: Settings) -> Dispatcher:
             user = await get_or_create_user(session, message.from_user.id)
             liked_games = _split_games(data.get("favorite_games", "")) + _split_games(data.get("last_loved_game", ""))
             preference_text = "\n".join([data.get("favorite_games", ""), data.get("last_loved_game", ""), data.get("dislikes", "")])
-            extracted = await llm.extract_tags(session, preference_text)
+            try:
+                extracted = await llm.extract_tags(session, preference_text)
+            except Exception:
+                logger.exception("Failed to extract preference tags")
+                extracted = {"preferred_tags": [], "disliked_tags": []}
+                await message.answer(
+                    "Я сохранил ответы, но временно не смог обработать их через LLM. "
+                    "Продолжу с базовым профилем."
+                )
 
             steam_text = (message.text or "").strip()
             if steam_text.lower() not in {"пропустить", "skip", "-"}:
@@ -86,9 +105,15 @@ def build_dispatcher(settings: Settings) -> Dispatcher:
 
     @router.message(Command("recommend"))
     async def recommend(message: Message) -> None:
-        async with SessionLocal() as session:
-            user = await get_or_create_user(session, message.from_user.id)
-            recommendations = await engine.recommend(session, user)
+        try:
+            async with SessionLocal() as session:
+                user = await get_or_create_user(session, message.from_user.id)
+                recommendations = await engine.recommend(session, user)
+        except Exception:
+            logger.exception("Failed to build recommendations")
+            await message.answer("Не смог собрать рекомендации прямо сейчас. Попробуй еще раз чуть позже.")
+            return
+
         for item in recommendations:
             await _send_recommendation(bot, message.chat.id, item)
 
@@ -136,4 +161,3 @@ def _split_games(value: str) -> list[str]:
 
 def _bullets(items: list[str]) -> str:
     return "\n".join(f"- {item}" for item in items[:3]) if items else "- Пока нет данных"
-
