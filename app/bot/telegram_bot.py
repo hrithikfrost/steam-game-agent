@@ -100,8 +100,20 @@ def build_dispatcher(settings: Settings) -> Dispatcher:
             user.preference.preferred_tags = {tag: 1.0 for tag in extracted.get("preferred_tags", [])}
             await session.commit()
 
+            await message.answer("Готово. Я собрал профиль вкусов. Сейчас подберу первые 3 игры.")
+            try:
+                recommendations = await engine.recommend(session, user)
+            except Exception:
+                logger.exception("Failed to build onboarding recommendations")
+                recommendations = []
+
         await state.clear()
-        await message.answer("Готово. Я собрал профиль вкусов. Напиши /recommend, чтобы получить 3 игры.")
+        if not recommendations:
+            await message.answer("Не смог собрать рекомендации прямо сейчас. Попробуй /recommend чуть позже.")
+            return
+
+        for item in recommendations:
+            await _send_recommendation(bot, message.chat.id, item)
 
     @router.message(Command("recommend"))
     async def recommend(message: Message) -> None:
