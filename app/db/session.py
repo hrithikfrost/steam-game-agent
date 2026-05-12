@@ -11,7 +11,9 @@ class Base(DeclarativeBase):
 
 
 settings = get_settings()
-connect_args = {"ssl": True} if settings.database_ssl else {}
+connect_args = {"statement_cache_size": 0}
+if settings.database_ssl:
+    connect_args["ssl"] = True
 database_url = settings.database_url
 if database_url.startswith("postgresql://"):
     database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
