@@ -14,7 +14,10 @@ class Settings(BaseSettings):
     supabase_project_ref: str | None = None
     telegram_bot_token: str = Field(default="")
     openai_api_key: str = Field(default="")
+    openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4.1-mini"
+    openai_app_url: str | None = None
+    openai_app_name: str | None = None
     steam_api_key: str = Field(default="")
     rawg_api_key: str = Field(default="")
     daily_recommendation_hour: int = 10
